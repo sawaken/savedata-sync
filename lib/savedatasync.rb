@@ -9,15 +9,15 @@ module Savedatasync
   )
 
     def self.from_argv(argv)
-      com = extract_argv(new, argv)
-      com.title ||= File.basename(File.dirname(com.local_path))
-      com.remote_dir_path ||= File.expand_path(default_remote_dir)
-      com.remote_filename ||= File.basename(com.local_path)
+      com = extract_argv(new, argv.map { |a| a.encode("UTF-8") })
+      com.title ||= File.basename(File.dirname(com.local_path)).encode("UTF-8")
+      com.remote_dir_path ||= File.expand_path(default_remote_dir).encode("UTF-8")
+      com.remote_filename ||= File.basename(com.local_path).encode("UTF-8")
       return com
     end
 
     def self.default_remote_dir
-      ENV['sdsync_remote_dir'] || "#{Dir.home}/Dropbox/sdsync"
+      ENV['sdsync_remote_dir'].encode("UTF-8") || "#{Dir.home.encode("UTF-8")}/Dropbox/sdsync"
     end
 
     def self.extract_argv(com, argv)
@@ -49,7 +49,7 @@ module Savedatasync
         exit(1)
       end
       com.sub_command = sub_command
-      com.local_path = File.expand_path(args_without_option[0])
+      com.local_path = File.expand_path(args_without_option[0]).encode("UTF-8")
       com.remote_filename = args_without_option[1]
       return com
     rescue OptionParser::InvalidOption => error
@@ -83,7 +83,7 @@ module Savedatasync
       @title = title
       @force = force
       @remote_dir_path = remote_dir_path
-      title_dir_path = File.expand_path(@remote_dir_path + '/' + @title)
+      title_dir_path = File.expand_path(@remote_dir_path + '/' + @title).encode("UTF-8")
       unless File.directory?(@remote_dir_path)
         raise Error.new("remote dir #{@remote_dir_path} does not exist")
       end
@@ -129,7 +129,7 @@ module Savedatasync
         unless @force
           raise Error.new("local file '#{local_path}' exists. use -f to force")
         end
-        FileUtils.rm_r(local_path)
+        FileUtils.rm_rf(local_path)
         FileUtils.symlink(remote_path, local_path)
         return true
       when :empty
@@ -172,7 +172,7 @@ module Savedatasync
 
     def local_status(local_path, remote_path)
       if File.symlink?(local_path)
-        File.readlink(local_path) == remote_path ? :valid_link : :invalid_link
+        File.readlink(local_path).encode("UTF-8") == remote_path ? :valid_link : :invalid_link
       else
         File.exist?(local_path) ? :entity : :empty
       end
@@ -183,7 +183,7 @@ module Savedatasync
     end
 
     def construct_remote_path(local_path, remote_filename)
-      File.expand_path("#{@remote_dir_path}/#{@title}/#{remote_filename}")
+      File.expand_path("#{@remote_dir_path}/#{@title}/#{remote_filename}").encode("UTF-8")
     end
   end
 end
