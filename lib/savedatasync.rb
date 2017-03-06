@@ -54,12 +54,8 @@ module Savedatasync
       return com
     rescue OptionParser::InvalidOption => error
       STDERR.puts error.message
-      print_usage
+      STDERR.puts opt_parser.help
       exit(1)
-    end
-
-    def self.help(opt_parser)
-      STDERR.puts
     end
 
     def run
